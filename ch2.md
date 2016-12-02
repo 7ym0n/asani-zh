@@ -24,7 +24,7 @@ Google Play 是一个特殊的应用，它为用户提供查找由第三方开�
 
 图 2.1：Android 安全架构
 
-在 Linux 中，内存中的所有文件都受 Linux 自定义访问控制（DAC）的约束。访问权限由文件的创建者或所有者为三种用户类型设置：文件的所有者，与所有者在同一组中的用户和所有其他用户。对于每种类型的用户，分配读，写和执行（`r-w-x`）权限的元组。因此，因为每个应用都有自己的 UID 和 GID，Linux 内核强制应用在自己的隔离地址空间内执行。除此之外，应用唯一的 UID 和 GID 由 Linux 内核使用，以实现不同应用之间的设备资源（内存，CPU 等）的公平分离。安装过程中的每个应用也会获得自己的主目录，例如`/data/data/package_name`，其中`package_name`是 Android 软件包的名称，例如`com.ex.ex1`，在 Android 中，这个文件夹是内部存储目录，其中应用将私有数据放在里面。分配给此目录的 Linu x 权限只允许“所有者”应用写入并读取此目录。有一些例外应该提到。使用相同证书签名的应用能够在彼此之间共享数据，可以拥有相同的 UID 或甚至可以在相同的进程中运行。
+在 Linux 中，内存中的所有文件都受 Linux 自定义访问控制（DAC）的约束。访问权限由文件的创建者或所有者为三种用户类型设置：文件的所有者，与所有者在同一组中的用户和所有其他用户。对于每种类型的用户，分配读，写和执行（`r-w-x`）权限的元组。因此，因为每个应用都有自己的 UID 和 GID，Linux 内核强制应用在自己的隔离地址空间内执行。除此之外，应用唯一的 UID 和 GID 由 Linux 内核使用，以实现不同应用之间的设备资源（内存，CPU 等）的公平分离。安装过程中的每个应用也会获得自己的主目录，例如`/data/data/package_name`，其中`package_name`是 Android 软件包的名称，例如`com.ex.ex1`，在 Android 中，这个文件夹是内部存储目录，其中应用将私有数据放在里面。分配给此目录的 Linu x 权限只允许“所有者"应用写入并读取此目录。有一些例外应该提到。使用相同证书签名的应用能够在彼此之间共享数据，可以拥有相同的 UID 或甚至可以在相同的进程中运行。
 
 这些架构决策在 Linux 内核层上建立了高效的应用沙箱。 这种类型的沙箱很简单，并基于 Linux 可选访问控制模型（DAC）的验证。 幸运的是，因为沙盒在 Linux 内核层上执行，本地代码和操作系统应用也受到本章[3]中所描述的这些约束的约束。
 
@@ -38,16 +38,16 @@ Google Play 是一个特殊的应用，它为用户提供查找由第三方开�
  1 ...
  2 <permissions> 
  3 ...
- 4 <permission name=”android.permission.INTERNET” > 
- 5 <group gid=”inet” /> 
+ 4 <permission name="android.permission.INTERNET" > 
+ 5 <group gid="inet" /> 
  6 </permission> 
  7 
- 8 <permission name=”android.permission.CAMERA” > 
- 9 <group gid=”camera” /> 
+ 8 <permission name="android.permission.CAMERA" > 
+ 9 <group gid="camera" /> 
 10 </permission> 
 11 
-12 <permission name=”android.permission.READ_LOGS” > 
-13 <group gid=”log” />
+12 <permission name="android.permission.READ_LOGS" > 
+13 <group gid="log" />
 14 </permission> 
 15 ...
 16 </permissions>

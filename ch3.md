@@ -24,21 +24,21 @@
  1 int main( int argc, char **argv ) 
  2 { 
  3   ...
- 4   if (!strcmp (basename( argv[0] ), ”ueventd”) ) 
+ 4   if (!strcmp (basename( argv[0] ), "ueventd") ) 
  5     return ueventd_main ( argc, argv ) ; 
  6   ...
- 7   mkdir(”/dev”, 0755) ; 
- 8   mkdir(”/proc”, 0755) ; 
- 9   mkdir(”/sys”, 0755) ; 
+ 7   mkdir("/dev", 0755) ; 
+ 8   mkdir("/proc", 0755) ; 
+ 9   mkdir("/sys", 0755) ; 
 10 
-11   mount(”tmpfs”, ”/dev”, ”tmpfs”, MS_NOSUID, ”mode=0755”) ; 
-12   mkdir(”/dev/pts”, 0755) ; 
-13   mkdir(”/dev/socket”, 0755) ; 
-14   mount(”devpts”, ”/dev/pts”, ”devpts”, 0, NULL) ; 
-15   mount(”proc”, ”/proc”, ”proc”, 0, NULL) ; 
-16   mount(”sysfs”, ”/sys”, ”sysfs”, 0, NULL) ; 
+11   mount("tmpfs", "/dev", "tmpfs", MS_NOSUID, "mode=0755") ; 
+12   mkdir("/dev/pts", 0755) ; 
+13   mkdir("/dev/socket", 0755) ; 
+14   mount("devpts", "/dev/pts", "devpts", 0, NULL) ; 
+15   mount("proc", "/proc", "proc", 0, NULL) ; 
+16   mount("sysfs", "/sys", "sysfs", 0, NULL) ; 
 17   ... 
-18   init_parseconfig_file(”/init.rc”) ; 
+18   init_parseconfig_file("/init.rc") ; 
 19   ... 
 20 }
 ```
@@ -78,7 +78,7 @@ ueventd.rc
 
 由`init`程序启动的核心服务之一是`servicemanager`（请参阅图 3.1 中的步骤 5）。 此服务充当在 Android 中运行的所有服务的索引。 它必须在早期阶段可用，因为以后启动的所有系统服务都应该有可能注册自己，从而对操作系统的其余部分可见[19]。
 
-`init`进程启动的另一个核心进程是 Zygote。 Zygote 是一个热身完毕的特殊进程。 这意味着该进程已经被初始化并且链接到核心库。 Zygote 是所有进程的祖先。 当一个新的应用启动时，Zygote 会派生自己。 之后，为派生子进程设置对应于新应用的参数，例如 UID，GID，`nice-name`等。 它能够加速新进程的创建，因为不需要将核心库复制到新进程中。 新进程的内存具有“写时复制”（COW）保护，这意味着只有当后者尝试写入受保护的内存时，数据才会从 zygote 进程复制到新进程。 从而，核心库不会改变，它们只保留在一个地方，减少内存消耗和应用启动时间。
+`init`进程启动的另一个核心进程是 Zygote。 Zygote 是一个热身完毕的特殊进程。 这意味着该进程已经被初始化并且链接到核心库。 Zygote 是所有进程的祖先。 当一个新的应用启动时，Zygote 会派生自己。 之后，为派生子进程设置对应于新应用的参数，例如 UID，GID，`nice-name`等。 它能够加速新进程的创建，因为不需要将核心库复制到新进程中。 新进程的内存具有“写时复制"（COW）保护，这意味着只有当后者尝试写入受保护的内存时，数据才会从 zygote 进程复制到新进程。 从而，核心库不会改变，它们只保留在一个地方，减少内存消耗和应用启动时间。
 
 使用 Zygote 运行的第一个进程是 System Server（图 3.1 中的步骤 6）。 这个进程首先运行本地服务，例如 SurfaceFlinger 和 SensorService。 在服务初始化之后，调用回调，启动剩余的服务。 所有这些服务之后使用 servicemanager 注册。
 
@@ -140,16 +140,16 @@ ueventd.rc
 12 #define AID_APP 10000 /* first app user */ 
 13 ... 
 14 static const struct android_id_info android_ids [ ] = { 
-15   { ”root” , AID_ROOT, }, 
-16   { ”system” , AID_SYSTEM, }, 
-17   { ”radio” , AID_RADIO, }, 
-18   { ”bluetooth” , AID_BLUETOOTH, }, 
-19   { ”graphics” , AID_GRAPHICS, }, 
-20   { ”input” , AID_INPUT, }, 
-21   { ”audio” , AID_AUDIO, }, 
-22   { ”camera” , AID_CAMERA, }, 
+15   { "root" , AID_ROOT, }, 
+16   { "system" , AID_SYSTEM, }, 
+17   { "radio" , AID_RADIO, }, 
+18   { "bluetooth" , AID_BLUETOOTH, }, 
+19   { "graphics" , AID_GRAPHICS, }, 
+20   { "input" , AID_INPUT, }, 
+21   { "audio" , AID_AUDIO, }, 
+22   { "camera" , AID_CAMERA, }, 
 23   ... 
-24   { ”inet” , AID_INET, }, 
+24   { "inet" , AID_INET, }, 
 25   ... 
 26 }; 
 ```
@@ -158,35 +158,35 @@ ueventd.rc
 
 ### 3.2.1 本地可执行文件的保护
 
-在清单 3.6 中可以看到一些二进制文件分配有`setuid`和`setgid`访问权限标志。例如，`su`程序设置了它们。这个众所周知的工具允许用户运行具有指定的 UID 和 GID 的程序。在 Linux 中，此功能通常用于运行具有超级用户权限的程序。根据列表 3.6，二进制`/system/xbin/su`的访问权限分配为“06755”（见第 21 行）。第一个非零数“6”意味着该二进制具有`setuid`和`setgid`（`4 + 2`）访问权限标志集。通常，在Linux中，可执行文件以与启动它的进程相同的权限运行。这些标签允许用户使用可执行所有者或组的权限运行程序[11]。因此，在我们的例子中，`binary/system/xbin/su`将以 root 用户身份运行。这些 root 权限允许程序将其 UID 和 GID 更改为用户指定的 UID 和 GID（见清单 3.7 中的第 15 行）。之后，`su`可以使用指定的 UID 和 GID 启动提供的程序（例如，参见行 22）。因此，程序将以所需的 UID 和 GID 启动。
+在清单 3.6 中可以看到一些二进制文件分配有`setuid`和`setgid`访问权限标志。例如，`su`程序设置了它们。这个众所周知的工具允许用户运行具有指定的 UID 和 GID 的程序。在 Linux 中，此功能通常用于运行具有超级用户权限的程序。根据列表 3.6，二进制`/system/xbin/su`的访问权限分配为“06755"（见第 21 行）。第一个非零数“6"意味着该二进制具有`setuid`和`setgid`（`4 + 2`）访问权限标志集。通常，在Linux中，可执行文件以与启动它的进程相同的权限运行。这些标签允许用户使用可执行所有者或组的权限运行程序[11]。因此，在我们的例子中，`binary/system/xbin/su`将以 root 用户身份运行。这些 root 权限允许程序将其 UID 和 GID 更改为用户指定的 UID 和 GID（见清单 3.7 中的第 15 行）。之后，`su`可以使用指定的 UID 和 GID 启动提供的程序（例如，参见行 22）。因此，程序将以所需的 UID 和 GID 启动。
 
 在特权程序的情况下，需要限制可访问这些工具的应用程序的范围。 在我们的这里，没有这样的限制，任何应用程序可以运行`su`程序并获得 root 级别的权限。 在 Android 中，通过将调用程序的 UID 与允许运行它的 UID 列表进行比较，来对本地用户空间层实现这种限制。 因此，在第 9 行中，`su`可执行文件获得进程的当前 UID，它等于调用它的进程的 UID，在第`10`行，它将这个 UID 与允许的 UID 的预定列表进行比较。 因此，只有在调用进程的 UID 等于`AID_ROOT`或`AID_SHELL`时，`su`工具才会启动。 为了执行这样的检查，`su`导入在 Android 中定义的 UID 常量（见第 1 行）。
 
 ```c
  1 /* Rules for directories .*/
  2 static struct fs_path_config android_dirs [ ] = { 
- 3   { 00770 , AID_SYSTEM, AID_CACHE, ”cache” } , 
- 4   { 00771 , AID_SYSTEM, AID_SYSTEM, ”data/app” } , 
+ 3   { 00770 , AID_SYSTEM, AID_CACHE, "cache" } , 
+ 4   { 00771 , AID_SYSTEM, AID_SYSTEM, "data/app" } , 
  5   ... 
- 6   { 00777 , AID_ROOT, AID_ROOT, ”sdcard” } , 
+ 6   { 00777 , AID_ROOT, AID_ROOT, "sdcard" } , 
  7   { 00755 , AID_ROOT, AID_ROOT, 0 } , 
  8 }; 
  9 
 10 /* Rules for files .*/ 
 11 static struct fs_path_config android_files [ ] = { 
 12   ... 
-13   { 00644 , AID_SYSTEM, AID_SYSTEM, ”data/app/*” } , 
-14   { 00644 , AID_MEDIA_RW, AID_MEDIA_RW, ”data/media/*” } , 
-15   { 00644 , AID_SYSTEM, AID SYSTEM, ”data/app−private /*” } , 
-16   { 00644 , AID_APP, AID_APP, ”data/data/*” } , 
+13   { 00644 , AID_SYSTEM, AID_SYSTEM, "data/app/*" } , 
+14   { 00644 , AID_MEDIA_RW, AID_MEDIA_RW, "data/media/*" } , 
+15   { 00644 , AID_SYSTEM, AID SYSTEM, "data/app−private /*" } , 
+16   { 00644 , AID_APP, AID_APP, "data/data/*" } , 
 17   ... 
-18   { 02755 , AID_ROOT, AID_NET_RAW, ”system/bin/ping” } , 
-19   { 02750 , AID_ROOT, AID_INET, ”system/bin/netcfg” } , 
+18   { 02755 , AID_ROOT, AID_NET_RAW, "system/bin/ping" } , 
+19   { 02750 , AID_ROOT, AID_INET, "system/bin/netcfg" } , 
 20   ... 
-21   { 06755 , AID_ROOT, AID_ROOT, ”system/xbin/su” } , 
+21   { 06755 , AID_ROOT, AID_ROOT, "system/xbin/su" } , 
 22   ... 
-23   { 06750 , AID_ROOT, AID_SHELL, ”system/bin/run−as” } , 
-24   { 00755 , AID_ROOT, AID_SHELL, ”system/bin/*” } , 
+23   { 06750 , AID_ROOT, AID_SHELL, "system/bin/run−as" } , 
+24   { 00755 , AID_ROOT, AID_SHELL, "system/bin/*" } , 
 25   ... 
 26   { 00644 , AID_ROOT, AID_ROOT, 0 } , 
 27 };
@@ -207,19 +207,19 @@ ueventd.rc
  8 /* Until we have something better , only root and the shell can use su . */ 
  9 myuid = getuid () ; 
 10 if (myuid != AID_ROOT && myuid != AID_SHELL) { 
-11   fprintf ( stderr, ”su : uid %d not allowed to su\n”, myuid) ; 
+11   fprintf ( stderr, "su : uid %d not allowed to su\n", myuid) ; 
 12   return 1; 
 13 } 
 14 ... 
 15 if ( setgid ( gid ) || setuid ( uid ) ) { 
-16   fprintf ( stderr, ”su : permission denied\n”) ; 
+16   fprintf ( stderr, "su : permission denied\n") ; 
 17   return 1; 
 18 } 
 19 
 20 /* User specified command for exec . */ 
 21 if ( argc == 3 ) { 
 22   if ( execlp ( argv[2], argv[2], NULL) < 0) { 
-23     fprintf ( stderr , ”su : exec failed for %s Error:%s\n” , argv [2] , 
+23     fprintf ( stderr , "su : exec failed for %s Error:%s\n" , argv [2] , 
 24     strerror ( errno ) ) ; 
 25     return −errno ; 
 26   } 
